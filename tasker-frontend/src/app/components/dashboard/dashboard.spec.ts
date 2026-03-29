@@ -35,14 +35,13 @@ function setup() {
       { provide: HttpClient, useValue: httpMock },
       { provide: Router, useValue: { navigate: vi.fn(), parseUrl: vi.fn() } },
     ],
-    // NO_ERRORS_SCHEMA suppresses unknown element errors (app-task-column child)
-    // so we don't need to import or stub TaskColumn in dashboard tests
     schemas: [NO_ERRORS_SCHEMA],
   });
 
   const fixture = TestBed.createComponent(Dashboard);
   fixture.detectChanges();
-  return { fixture, component: fixture.componentInstance };
+  const component = fixture.componentInstance as any;
+  return { fixture, component };
 }
 
 describe('Dashboard', () => {
@@ -110,7 +109,7 @@ describe('Dashboard', () => {
     it('should call updateTask with inverted completed value', () => {
       const { component } = setup();
       const updateSpy = vi.spyOn(component.taskService, 'updateTask').mockReturnValue(EMPTY);
-      component.toggleComplete(mockTasks[0]); // completed: false → true
+      component.toggleComplete(mockTasks[0]);
       expect(updateSpy).toHaveBeenCalledWith(1, { completed: true });
     });
   });
@@ -134,7 +133,7 @@ describe('Dashboard', () => {
     it('should mark completed task as incomplete when dropped in todo column', () => {
       const { component } = setup();
       const updateSpy = vi.spyOn(component.taskService, 'updateTask').mockReturnValue(EMPTY);
-      component.onDragStart(mockTasks[1]); // completed: true
+      component.onDragStart(mockTasks[1]);
       component.onDropTodo({} as DragEvent);
       expect(updateSpy).toHaveBeenCalledWith(2, { completed: false });
       expect(component.draggedTask()).toBeNull();
@@ -143,7 +142,7 @@ describe('Dashboard', () => {
     it('should mark incomplete task as complete when dropped in done column', () => {
       const { component } = setup();
       const updateSpy = vi.spyOn(component.taskService, 'updateTask').mockReturnValue(EMPTY);
-      component.onDragStart(mockTasks[0]); // completed: false
+      component.onDragStart(mockTasks[0]);
       component.onDropDone({} as DragEvent);
       expect(updateSpy).toHaveBeenCalledWith(1, { completed: true });
       expect(component.draggedTask()).toBeNull();
@@ -152,7 +151,7 @@ describe('Dashboard', () => {
     it('should skip update when task dropped in same column state', () => {
       const { component } = setup();
       const updateSpy = vi.spyOn(component.taskService, 'updateTask').mockReturnValue(EMPTY);
-      component.onDragStart(mockTasks[0]); // already incomplete
+      component.onDragStart(mockTasks[0]);
       component.onDropTodo({} as DragEvent);
       expect(updateSpy).not.toHaveBeenCalled();
     });
