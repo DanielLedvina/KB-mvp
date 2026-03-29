@@ -6,17 +6,17 @@ A full-stack task management application built as an MVP to demonstrate modern f
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Angular 21 (standalone components, Signals API) |
-| Backend | Node.js + Express 5 |
-| Database | PostgreSQL (Docker) |
-| Auth | JWT + bcrypt |
-| Validation | Zod |
-| API Docs | OpenAPI 3 / Swagger UI |
-| Testing | Vitest (Angular native) |
-| CI | Jenkins (Declarative Pipeline) |
-| Container | Docker + nginx |
+| Layer      | Technology                                      |
+| ---------- | ----------------------------------------------- |
+| Frontend   | Angular 21 (standalone components, Signals API) |
+| Backend    | Node.js + Express 5                             |
+| Database   | PostgreSQL (Docker)                             |
+| Auth       | JWT + bcrypt                                    |
+| Validation | Zod                                             |
+| API Docs   | OpenAPI 3 / Swagger UI                          |
+| Testing    | Vitest (Angular native)                         |
+| CI         | Jenkins (Declarative Pipeline)                  |
+| Container  | Docker + nginx                                  |
 
 ---
 
@@ -122,16 +122,19 @@ All async controllers are wrapped in `asyncHandler` which forwards thrown errors
 ## Running Locally
 
 ### Prerequisites
+
 - Node.js 22+
 - Docker Desktop
 
 ### Database
+
 ```bash
 cd tasker-backend
 docker-compose up -d
 ```
 
 ### Backend (real)
+
 ```bash
 cd tasker-backend
 cp .env.example .env   # fill in DB credentials
@@ -141,12 +144,14 @@ npm run dev
 ```
 
 ### Backend (mock — no database needed)
+
 ```bash
 cd tasker-backend
 npm run mock
 ```
 
 ### Frontend
+
 ```bash
 cd tasker-frontend
 npm install
@@ -159,6 +164,7 @@ ng serve --configuration mock
 ```
 
 ### Running tests
+
 ```bash
 cd tasker-frontend
 npm test
@@ -182,8 +188,8 @@ The `Jenkinsfile` at the project root defines a declarative pipeline with these 
 
 With the backend running:
 
-| URL | Description |
-|-----|-------------|
-| `http://localhost:3000/api-docs` | Combined Swagger UI |
-| `http://localhost:3000/api-docs/auth` | Auth endpoints only |
+| URL                                    | Description         |
+| -------------------------------------- | ------------------- |
+| `http://localhost:3000/api-docs`       | Combined Swagger UI |
+| `http://localhost:3000/api-docs/auth`  | Auth endpoints only |
 | `http://localhost:3000/api-docs/tasks` | Task endpoints only |
