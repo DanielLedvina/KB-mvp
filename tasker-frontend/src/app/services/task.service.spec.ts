@@ -21,7 +21,9 @@ function setup() {
     ],
   });
 
-  return TestBed.inject(TaskService);
+  const service = TestBed.inject(TaskService);
+  service.loadTasks();
+  return service;
 }
 
 describe('TaskService', () => {
@@ -47,6 +49,7 @@ describe('TaskService', () => {
         providers: [TaskService, { provide: HttpClient, useValue: mockHttp }],
       });
       const service = TestBed.inject(TaskService);
+      service.loadTasks();
       expect(service.error()).toBe('Failed to load tasks. Please try again.');
       expect(service.tasks()).toEqual([]);
     });

@@ -60,7 +60,7 @@ describe('AuthService', () => {
       mockHttp.post.mockReturnValue(of(mockUser));
       const service = setup(null);
 
-      service.login({ email: 'daniel@tasker.com', password: 'password' });
+      service.login({ email: 'daniel@tasker.com', password: 'password' }).subscribe();
 
       expect(service.isLoggedIn()).toBe(true);
       expect(service.currentUser()).toEqual(mockUser);
@@ -72,7 +72,7 @@ describe('AuthService', () => {
       mockHttp.post.mockReturnValue(throwError(() => ({ status: 401 })));
       const service = setup(null);
 
-      service.login({ email: 'wrong@email.com', password: 'wrong' });
+      service.login({ email: 'wrong@email.com', password: 'wrong' }).subscribe();
 
       expect(service.isLoggedIn()).toBe(false);
       expect(service.loginError()).toBe('Invalid email or password.');
@@ -82,7 +82,7 @@ describe('AuthService', () => {
       mockHttp.post.mockReturnValue(throwError(() => ({ status: 500 })));
       const service = setup(null);
 
-      service.login({ email: 'daniel@tasker.com', password: 'password' });
+      service.login({ email: 'daniel@tasker.com', password: 'password' }).subscribe();
 
       expect(service.loginError()).toBe('Login failed. Please try again.');
     });
@@ -93,10 +93,10 @@ describe('AuthService', () => {
         .mockReturnValueOnce(of(mockUser));
       const service = setup(null);
 
-      service.login({ email: 'x', password: 'x' });
+      service.login({ email: 'x', password: 'x' }).subscribe();
       expect(service.loginError()).toBe('Invalid email or password.');
 
-      service.login({ email: 'daniel@tasker.com', password: 'password' });
+      service.login({ email: 'daniel@tasker.com', password: 'password' }).subscribe();
       expect(service.loginError()).toBeNull();
     });
   });
