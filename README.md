@@ -16,7 +16,9 @@ A full-stack task management application built as an MVP to demonstrate modern f
 | API Docs   | OpenAPI 3 / Swagger UI                          |
 | Testing    | Vitest (Angular native)                         |
 | CI         | Jenkins (Declarative Pipeline)                  |
+| CD         | ArgoCD (GitOps)                                 |
 | Container  | Docker + nginx                                  |
+| Orchestration | Kubernetes (Docker Desktop)                  |
 
 ---
 
@@ -35,28 +37,43 @@ A full-stack task management application built as an MVP to demonstrate modern f
 
 ```
 MVP/
-├── Jenkinsfile                  # CI pipeline
+├── Jenkinsfile                  # CI/CD pipeline
+├── k8s/                         # Kubernetes manifests
+│   ├── namespace.yaml
+│   ├── configmap.yaml
+│   ├── secret.example.yaml      # Template — copy to secret.yaml and fill in
+│   ├── postgres.yaml            # PVC + Deployment + Service
+│   ├── backend.yaml             # Deployment + Service
+│   ├── frontend.yaml            # Deployment + Service
+│   ├── ingress.yaml             # nginx Ingress
+│   ├── argocd-app.yaml          # ArgoCD Application manifest
+│   └── init.sql                 # DB schema (users + tasks tables)
+│
 ├── tasker-frontend/             # Angular 21 SPA
 │   ├── src/app/
-│   │   ├── components/          # UI components
-│   │   │   ├── dashboard/       # Smart component — manages state
+│   │   ├── components/
+│   │   │   ├── dashboard/       # Smart component — owns all state
 │   │   │   ├── task-column/     # Presentational — renders a column
 │   │   │   ├── task-card/       # Presentational — renders a card
 │   │   │   ├── login/
 │   │   │   ├── header/
 │   │   │   └── avatar/
+│   │   ├── models/              # Shared TypeScript interfaces
+│   │   │   ├── task.model.ts    # Task, CreateTaskDto, UpdateTaskDto
+│   │   │   ├── user.model.ts    # User
+│   │   │   └── index.ts         # Barrel export
 │   │   ├── services/
 │   │   │   ├── auth.service.ts  # Login, logout, token, localStorage
 │   │   │   └── task.service.ts  # Task CRUD, signals state
 │   │   ├── auth.guard.ts        # Route protection
 │   │   ├── auth.interceptor.ts  # Attaches Bearer token to every request
 │   │   └── app.config.ts        # provideHttpClient + interceptors
-│   ├── src/environments/        # environment.ts / mock / prod
-│   ├── Dockerfile               # Multi-stage: build → nginx
+│   ├── src/environments/        # environment.ts / environment.mock.ts
+│   ├── Dockerfile               # Multi-stage: node build → nginx serve
 │   └── nginx.conf               # SPA fallback routing
 │
 └── tasker-backend/              # Express REST API
-    ├── server.js                # App bootstrap, middleware, routes mount
+    ├── server.js                # App bootstrap, middleware, routes
     ├── db.js                    # Shared pg Pool
     ├── routes/                  # URL → controller mapping
     ├── controllers/             # HTTP request/response handling
@@ -64,12 +81,12 @@ MVP/
     ├── middleware/
     │   ├── auth.middleware.js   # JWT verification
     │   ├── validate.middleware.js # Zod schema validation
-    │   ├── async-handler.js     # Wraps async controllers for error forwarding
+    │   ├── async-handler.js     # Wraps async controllers
     │   └── error.middleware.js  # Global error handler
-    ├── schemas/                 # Zod schemas (auth, task)
-    ├── swagger/                 # OpenAPI YAML split by domain
+    ├── schemas/                 # Zod validation schemas
+    ├── swagger/                 # OpenAPI YAML (auth + tasks)
     ├── mock/                    # json-server mock for development
-    └── scripts/                 # One-time utility scripts
+    └── .env.example             # Environment template
 ```
 
 ---
@@ -90,106 +107,154 @@ Angular 21 Signals provide simpler, synchronous state management for UI state. R
 **HTTP interceptor for auth**
 Rather than manually attaching `Authorization` headers in every service method, a single `authInterceptor` reads the token from `AuthService` and attaches it to every outgoing request. The login endpoint is naturally excluded since it has no token yet.
 
+**Centralized models**
+All TypeScript interfaces live in `src/app/models/` and are exported via a barrel `index.ts`. Components and services import from `../models` — never from each other — which prevents circular dependencies and makes types easy to find.
+
 **Environment-based API switching**
-Three environment files (`environment.ts`, `environment.mock.ts`, `environment.prod.ts`) control which API the app talks to. Angular's `fileReplacements` in `angular.json` swaps the file at build time. Running `ng serve --configuration mock` points the app to the local json-server on port 3001 without touching any source code.
+Two environment files (`environment.ts`, `environment.mock.ts`) control which API the app talks to. Angular's `fileReplacements` in `angular.json` swaps the file at build time — no source code changes needed to switch between mock and real backend.
 
 ### Backend
 
 **Layered architecture**
-The original monolithic `server.js` (140 lines, all logic in one file) was split into four distinct layers:
-
-- **Routes** — URL mapping only, no logic
-- **Controllers** — HTTP request parsing and response formatting
-- **Services** — all SQL queries and business logic
-- **Middleware** — cross-cutting concerns (auth, validation, error handling)
-
-This separation means each layer can be changed or tested independently.
+Split into four distinct layers: Routes (URL mapping) → Controllers (HTTP handling) → Services (business logic + SQL) → Middleware (cross-cutting concerns). Each layer can be changed or tested independently.
 
 **JWT over sessions**
-Sessions require server-side storage (Redis or DB) which adds infrastructure complexity. JWTs are stateless — the server only needs the secret to verify a token. Tokens expire after 7 days. The tradeoff is that tokens cannot be invalidated before expiry without a blocklist, which is acceptable for this MVP scope.
+JWTs are stateless — the server only needs the secret to verify a token. Tokens expire after 7 days. Acceptable tradeoff for MVP scope.
 
 **Zod validation as middleware**
-Input validation runs before controllers via `validate(schema)` middleware. This means controllers receive already-validated, type-safe data and don't need defensive checks. Invalid requests are rejected with structured error responses (`{ error, details: [{ field, message }] }`) before any business logic runs.
+Input validation runs before controllers via `validate(schema)` middleware. Controllers receive already-validated data and don't need defensive checks. Invalid requests are rejected with structured errors before any business logic runs.
 
 **bcrypt for passwords**
-Plaintext password comparison is replaced with `bcrypt.compare()`. The cost factor of 10 provides a reasonable balance between security and performance (≈100ms per comparison). The `scripts/hash-passwords.js` one-time migration script hashes existing plaintext passwords in the database.
+Passwords are hashed with bcrypt at cost factor 10 (≈100ms per comparison). Never stored in plaintext.
 
 **Global async error handling**
-All async controllers are wrapped in `asyncHandler` which forwards thrown errors to Express's error handler via `next(err)`. This eliminates repetitive try/catch blocks in every controller and ensures unhandled promise rejections never crash the server.
+All async controllers are wrapped in `asyncHandler` which forwards errors to Express's global error handler. Eliminates repetitive try/catch blocks.
 
 ---
 
-## Running Locally
+## Scenario 1 — Mock server (no database needed)
+
+Use this to demonstrate the app with dummy data without any infrastructure.
+
+**What it does:** Frontend talks to `json-server` running on port 3001. Data is stored in a local JSON file. No PostgreSQL, no Docker needed.
+
+```bash
+# Terminal 1 — mock backend
+cd tasker-backend
+npm install
+npm run mock
+# json-server starts on http://localhost:3001
+
+# Terminal 2 — frontend pointed at mock
+cd tasker-frontend
+npm install
+ng serve --configuration mock
+# App starts on http://localhost:4200
+```
+
+Login with any credentials from `tasker-backend/mock/db.json`.
+
+---
+
+## Scenario 2 — Real PostgreSQL database
+
+Use this to demonstrate the app reading from and writing to a real database.
+
+**What it does:** Frontend talks to Express backend on port 3000. Backend connects to PostgreSQL running in Docker. Data is persisted.
+
+```bash
+# Terminal 1 — start the database
+docker start tasker-db
+# PostgreSQL runs on localhost:5433
+
+# Terminal 2 — real backend
+cd tasker-backend
+npm install
+npm run dev
+# Express starts on http://localhost:3000
+
+# Terminal 3 — frontend pointed at real backend
+cd tasker-frontend
+ng serve
+# App starts on http://localhost:4200
+```
+
+Login credentials: `daniel@tasker.com` / `password`
+
+Swagger API docs: `http://localhost:3000/api-docs`
+
+---
+
+## Scenario 3 — Full CI/CD pipeline (Jenkins + Docker + ArgoCD + Kubernetes)
+
+Use this to demonstrate the automated build and deployment flow.
+
+**What it does:** A `git push` triggers Jenkins via GitHub webhook → Jenkins runs tests, builds Docker images, pushes to Docker Hub, updates Kubernetes manifests → ArgoCD detects the manifest change and deploys new pods automatically.
 
 ### Prerequisites
 
-- Node.js 22+
-- Docker Desktop
+- Docker Desktop with Kubernetes enabled
+- Jenkins container
+- ngrok account
 
-### Database
+### Startup
 
 ```bash
-cd tasker-backend
-docker-compose up -d
+# 1. Start Jenkins
+docker start jenkins
+# Open http://localhost:8080
+
+# 2. Start ngrok so GitHub webhook can reach Jenkins
+ngrok http 8080
+# GitHub webhook is already configured — any push triggers a build automatically
+
+# 3. Expose ArgoCD UI
+kubectl port-forward svc/argocd-server -n argocd 8081:443
+# Open https://localhost:8081
+# Username: admin
+# Password: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+
+# 4. Expose the app running in Kubernetes
+kubectl port-forward svc/tasker-frontend -n tasker 4200:80
+kubectl port-forward svc/tasker-backend -n tasker 3000:3000
+# Open http://localhost:4200
 ```
 
-### Backend (real)
+### Automated flow
 
-```bash
-cd tasker-backend
-cp .env.example .env   # fill in DB credentials
-npm install
-node scripts/hash-passwords.js   # one-time: hash existing passwords
-npm run dev
 ```
-
-### Backend (mock — no database needed)
-
-```bash
-cd tasker-backend
-npm run mock
-```
-
-### Frontend
-
-```bash
-cd tasker-frontend
-npm install
-
-# Against real backend (port 3000)
-ng serve
-
-# Against mock backend (port 3001)
-ng serve --configuration mock
-```
-
-### Running tests
-
-```bash
-cd tasker-frontend
-npm test
+git push to main
+  → GitHub webhook fires → Jenkins starts automatically
+  → Stage: Frontend — npm ci, 39 tests, ng build
+  → Stage: Backend  — npm ci
+  → Stage: Docker Build — builds tasker-frontend:N and tasker-backend:N
+  → Stage: Docker Push  — pushes :N and :latest to Docker Hub
+  → Stage: Update Manifests — updates k8s/frontend.yaml + k8s/backend.yaml with new tag, pushes to git
+  → ArgoCD detects git change → kubectl apply → new pods roll out
 ```
 
 ---
 
-## CI Pipeline (Jenkins)
+## CI Pipeline stages (Jenkinsfile)
 
-The `Jenkinsfile` at the project root defines a declarative pipeline with these stages:
-
-1. **Checkout** — clone from SCM
-2. **Frontend** — `npm ci` → `npm test -- --run` → `npm run build`
-3. **Backend** — `npm ci`
-4. **Docker Build** — builds images for both frontend and backend
-5. **Docker Push** — pushes to Docker Hub (runs on `main` branch only, requires `dockerhub-credentials` in Jenkins credentials store)
+| Stage | What it does |
+| ----- | ------------ |
+| Check commit | Skips the pipeline if the commit is from Jenkins itself (prevents infinite loop) |
+| Checkout | Clones the repo |
+| Frontend | `npm ci` → `npm run test:ci` (39 tests) → `ng build` |
+| Backend | `npm ci` |
+| Docker Build | Builds `tasker-frontend:N` and `tasker-backend:N` |
+| Docker Push | Tags `:N` and `:latest`, pushes to Docker Hub (main branch only) |
+| Update Manifests | Updates image tags in `k8s/*.yaml`, commits and pushes to git |
 
 ---
 
 ## API Documentation
 
-With the backend running:
+With the backend running (`npm run dev` or K8s port-forward):
 
-| URL                                    | Description         |
-| -------------------------------------- | ------------------- |
-| `http://localhost:3000/api-docs`       | Combined Swagger UI |
-| `http://localhost:3000/api-docs/auth`  | Auth endpoints only |
+| URL | Description |
+| --- | ----------- |
+| `http://localhost:3000/api-docs` | Combined Swagger UI |
+| `http://localhost:3000/api-docs/auth` | Auth endpoints only |
 | `http://localhost:3000/api-docs/tasks` | Task endpoints only |
