@@ -65,6 +65,29 @@ pipeline {
             }
         }
 
+        stage('Update Manifests') {
+            when {
+                expression {
+                    return env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main'
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-credentials',
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_PASS'
+                )]) {
+                    sh "sed -i 's|danielledvina/tasker-frontend:.*|danielledvina/tasker-frontend:${DOCKER_TAG}|' k8s/frontend.yaml"
+                    sh "sed -i 's|danielledvina/tasker-backend:.*|danielledvina/tasker-backend:${DOCKER_TAG}|' k8s/backend.yaml"
+                    sh 'git config user.email "jenkins@tasker.com"'
+                    sh 'git config user.name "Jenkins"'
+                    sh 'git add k8s/frontend.yaml k8s/backend.yaml'
+                    sh "git commit -m 'ci: update image tags to ${DOCKER_TAG}'"
+                    sh 'git push https://${GIT_USER}:${GIT_PASS}@github.com/DanielLedvina/KB-mvp.git HEAD:main'
+                }
+            }
+        }
+
     }
 
     post {
