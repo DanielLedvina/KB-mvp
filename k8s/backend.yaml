@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: tasker-backend
-          image: danielledvina/tasker-backend:17
+          image: danielledvina/tasker-backend:18
           ports:
             - containerPort: 3000
           envFrom:
