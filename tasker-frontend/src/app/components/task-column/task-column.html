@@ -1,0 +1,29 @@
+<div class="column" (dragover)="onDragOver($event)" (drop)="onDropHandler($event)">
+  <div class="column-header">
+    <div class="column-title">
+      <span class="column-name">{{ title() }}</span>
+      <span class="column-badge" [class.done]="title() === 'Completed'">
+        {{ tasks().length }}
+      </span>
+    </div>
+    @if (title() === 'Completed') {
+      <lucide-icon [img]="CircleCheckIcon" size="22" color="#16a34a" />
+    } @else {
+      <lucide-icon [img]="ClockIcon" size="20" color="#8e9193" />
+    }
+  </div>
+
+  <div class="task-list">
+    @for (task of tasks(); track task.id) {
+      <app-task-card
+        [task]="task"
+        (onToggle)="onToggle.emit($event)"
+        (onEdit)="onEdit.emit($event)"
+        (onDelete)="onDelete.emit($event)"
+        (onDragStart)="onDragStart.emit($event)"
+      />
+    } @empty {
+      <div class="empty-state">{{ emptyMessage() }}</div>
+    }
+  </div>
+</div>

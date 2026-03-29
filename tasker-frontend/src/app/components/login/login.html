@@ -1,0 +1,29 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="header-section">
+      <h2>Smart Tasker Login</h2>
+      <p>Please log in to continue to Daniel's dashboard.</p>
+    </div>
+
+    <div class="form-section">
+      <div class="form-group">
+        <label>Email</label>
+        <input #email type="email" value="daniel@tasker.com" />
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input #password type="password" value="password" />
+      </div>
+      @if (loginError()) {
+        <p class="error-message">{{ loginError() }}</p>
+      }
+      <button
+        (click)="login(email.value, password.value)"
+        class="btn-primary"
+      >
+        Log In
+      </button>
+    </div>
+  </div>
+</div>

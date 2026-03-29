@@ -1,0 +1,75 @@
+openapi: 3.0.1
+info:
+  title: Tasker API – Auth
+  version: 1.0.0
+  description: Authentication endpoints
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: Auth
+
+paths:
+  /login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: daniel@tasker.com
+                password:
+                  type: string
+                  example: password
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Daniel
+        email:
+          type: string
+          example: daniel@tasker.com
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+  responses:
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

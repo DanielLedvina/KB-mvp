@@ -1,0 +1,36 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Buy groceries",
+      "tag": "PERSONAL",
+      "description": "Milk, eggs, bread",
+      "completed": false,
+      "created_at": "2026-03-28T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "Fix login bug",
+      "tag": "WORK",
+      "description": "",
+      "completed": true,
+      "created_at": "2026-03-28T09:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "title": "Write tests",
+      "tag": "WORK",
+      "description": "Unit tests for task service",
+      "completed": false,
+      "created_at": "2026-03-28T11:00:00.000Z"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Daniel",
+      "email": "daniel@tasker.com",
+      "password": "password"
+    }
+  ]
+}

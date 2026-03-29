@@ -1,0 +1,166 @@
+openapi: 3.0.1
+info:
+  title: Tasker API – Tasks
+  version: 1.0.0
+  description: Task management endpoints
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: Tasks
+
+paths:
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: Get all tasks
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    post:
+      tags: [Tasks]
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  example: Buy groceries
+                tag:
+                  type: string
+                  example: DEFAULT
+                description:
+                  type: string
+                  example: Milk, eggs, bread
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /tasks/{id}:
+    patch:
+      tags: [Tasks]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                tag:
+                  type: string
+                description:
+                  type: string
+                completed:
+                  type: boolean
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: No data provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Task deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Task deleted successfully
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Buy groceries
+        tag:
+          type: string
+          example: DEFAULT
+        description:
+          type: string
+          example: Milk, eggs, bread
+        completed:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+  responses:
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

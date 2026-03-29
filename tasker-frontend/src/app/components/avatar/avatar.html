@@ -1,0 +1,7 @@
+<div class="avatar-container">
+  @if (auth.isLoggedIn()) {
+    <img src="avatar.png" alt="User Avatar" />
+  } @else {
+    <span class="placeholder">?</span>
+  }
+</div>

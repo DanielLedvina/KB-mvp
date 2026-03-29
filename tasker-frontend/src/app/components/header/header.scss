@@ -1,0 +1,55 @@
+@use '../../../styles/variables' as *;
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px;
+  height: 64px;
+  background-color: $color-white;
+  border-bottom: 1px solid $color-gray-medium-light;
+  box-sizing: border-box;
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+
+    .logo {
+      color: $color-primary;
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+
+      a {
+        text-decoration: none;
+        color: $color-secondary;
+        font-weight: 500;
+        font-size: 15px;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: $color-primary;
+        }
+
+        &.active {
+          color: $color-primary;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+}

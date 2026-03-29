@@ -1,0 +1,112 @@
+<div class="dashboard-container">
+  <!-- Top section: greeting + add button -->
+  <div class="dashboard-top">
+    <div class="greeting-section">
+      <p class="overview-label">EXECUTIVE OVERVIEW</p>
+      <h1 class="greeting">{{ greeting() }}, {{ currentUser()?.name }}.</h1>
+      <p class="task-summary">
+        You have <strong class="task-count">{{ todoTasks().length }} tasks</strong> requiring your
+        attention today.
+      </p>
+    </div>
+    <button class="btn-add" (click)="openAddModal()">
+      <span class="plus-icon">+</span> Add Task
+    </button>
+  </div>
+
+  <!-- Error banner -->
+  @if (taskError()) {
+    <div class="error-banner">
+      {{ taskError() }}
+      <button class="error-retry" (click)="retryLoad()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading state -->
+  @if (taskLoading()) {
+    <div class="columns-wrapper">
+      <div class="skeleton-column">
+        <div class="skeleton-header"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+      <div class="skeleton-column">
+        <div class="skeleton-header"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+  } @else {
+    <!-- Task columns -->
+    <div class="columns-wrapper">
+      <app-task-column
+        title="To-Do"
+        [tasks]="todoTasks()"
+        emptyMessage="Everything is done!"
+        (onToggle)="toggleComplete($event)"
+        (onEdit)="openEditModal($event)"
+        (onDelete)="deleteTask($event)"
+        (onDragStart)="onDragStart($event)"
+        (onDrop)="onDropTodo($event)"
+      />
+      <app-task-column
+        title="Completed"
+        [tasks]="doneTasks()"
+        emptyMessage="No tasks completed yet."
+        (onToggle)="toggleComplete($event)"
+        (onEdit)="openEditModal($event)"
+        (onDelete)="deleteTask($event)"
+        (onDragStart)="onDragStart($event)"
+        (onDrop)="onDropDone($event)"
+      />
+    </div>
+  }
+</div>
+
+<!-- Modal: Add / Edit Task -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2 class="modal-title">{{ editingTask() ? 'Edit Task' : 'Add Task' }}</h2>
+
+      <label class="modal-label">Title</label>
+      <input
+        class="modal-input"
+        type="text"
+        placeholder="Task title..."
+        [ngModel]="formTitle()"
+        (ngModelChange)="formTitle.set($event)"
+      />
+
+      <label class="modal-label">Tag</label>
+      <input
+        class="modal-input"
+        type="text"
+        placeholder="DEFAULT"
+        [ngModel]="formTag()"
+        (ngModelChange)="formTag.set($event)"
+      />
+
+      <label class="modal-label">Description</label>
+      <textarea
+        class="modal-textarea"
+        placeholder="Optional description..."
+        [ngModel]="formDescription()"
+        (ngModelChange)="formDescription.set($event)"
+        rows="3"
+      ></textarea>
+
+      @if (taskError()) {
+        <p class="modal-error">{{ taskError() }}</p>
+      }
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeModal()" [disabled]="saving()">Cancel</button>
+        <button class="btn-save" (click)="saveTask()" [disabled]="saving()">
+          @if (saving()) { Saving... } @else { {{ editingTask() ? 'Save' : 'Add Task' }} }
+        </button>
+      </div>
+    </div>
+  </div>
+}

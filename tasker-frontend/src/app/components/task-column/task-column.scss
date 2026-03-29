@@ -1,0 +1,57 @@
+@use '../../../styles/variables.scss' as *;
+
+.column {
+  background-color: $color-white;
+  border-radius: $border-radius;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 200px;
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 4px;
+}
+
+.column-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.column-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: $color-black;
+}
+
+.column-badge {
+  background-color: $color-gray-medium-light;
+  color: $color-gray-dark;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+
+  &.done-badge {
+    background-color: $color-success-light;
+    color: $color-success;
+  }
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  color: $color-gray-medium;
+  font-size: 14px;
+  padding: 24px 0;
+}

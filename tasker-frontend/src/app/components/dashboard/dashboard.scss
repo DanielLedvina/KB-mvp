@@ -1,0 +1,258 @@
+@use '../../../styles/variables' as *;
+
+:host {
+  display: flex;
+  flex: 1;
+  background-color: $color-gray-light;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 40px 48px;
+  box-sizing: border-box;
+  gap: 32px;
+}
+
+.dashboard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.greeting-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overview-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: $color-primary;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.greeting {
+  font-size: 32px;
+  font-weight: 800;
+  color: $color-black;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.task-summary {
+  font-size: 15px;
+  color: $color-gray-dark;
+  margin: 0;
+}
+
+.task-count {
+  color: $color-primary;
+  font-weight: 700;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: $color-primary;
+  color: $color-white;
+  border: none;
+  border-radius: $border-radius;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #3730a3;
+  }
+
+  .plus-icon {
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 400;
+  }
+}
+
+.columns-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+// ── Error banner ──────────────────────────────────────────────
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background-color: #fff0f0;
+  border: 1px solid #f5c6c6;
+  border-radius: $border-radius;
+  color: #c0392b;
+  font-size: 14px;
+}
+
+.error-retry {
+  margin-left: auto;
+  background: none;
+  border: 1.5px solid #c0392b;
+  color: #c0392b;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fff0f0;
+  }
+}
+
+// ── Skeleton loading ───────────────────────────────────────────
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+%skeleton {
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 8px;
+}
+
+.skeleton-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-header {
+  @extend %skeleton;
+  height: 48px;
+}
+
+.skeleton-card {
+  @extend %skeleton;
+  height: 80px;
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: $color-white;
+  border-radius: $border-radius;
+  padding: 32px;
+  width: 460px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: $color-black;
+  margin: 0 0 8px 0;
+}
+
+.modal-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-gray-dark;
+  margin-bottom: -4px;
+}
+
+.modal-input,
+.modal-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid $color-gray-medium-light;
+  border-radius: 8px;
+  font-size: 14px;
+  color: $color-black;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+
+  &::placeholder {
+    color: $color-gray-medium;
+  }
+}
+
+.modal-textarea {
+  resize: vertical;
+}
+
+.modal-error {
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #fff0f0;
+  border: 1px solid #f5c6c6;
+  border-radius: 6px;
+  color: #c0392b;
+  font-size: 13px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-cancel {
+  background: none;
+  border: 1.5px solid $color-gray-medium-light;
+  color: $color-gray-dark;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background-color: $color-gray-light;
+  }
+}
+
+.btn-save {
+  background-color: $color-primary;
+  color: $color-white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background-color: #3730a3;
+  }
+}

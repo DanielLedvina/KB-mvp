@@ -1,0 +1,39 @@
+<div
+  class="task-card"
+  [class.done]="task().completed"
+  draggable="true"
+  (dragstart)="onDragStart.emit(task())"
+>
+  <div class="task-left">
+    <button class="checkbox-btn" (click)="onToggle.emit(task())">
+      @if (task().completed) {
+        <span class="checkbox-circle checked">
+          <lucide-icon [img]="CheckIcon" size="11" strokeWidth="3" />
+        </span>
+      } @else {
+        <span class="checkbox-circle"></span>
+      }
+    </button>
+    <div class="task-body">
+      @if (task().completed) {
+        <span class="tag muted">{{ task().tag }}</span>
+        <span class="title strikethrough">{{ task().title }}</span>
+      } @else {
+        <span class="tag">{{ task().tag }}</span>
+        <span class="title">{{ task().title }}</span>
+      }
+      @if (task().description) {
+        <span class="desc">{{ task().description }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="task-actions">
+    <button class="action-btn edit-btn" (click)="onEdit.emit(task())" title="Edit">
+      <lucide-icon [img]="PencilIcon" size="15" />
+    </button>
+    <button class="action-btn delete-btn" (click)="onDelete.emit(task())" title="Delete">
+      <lucide-icon [img]="Trash2Icon" size="15" />
+    </button>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<nav class="main-header">
+  <div class="nav-left">
+    <h1 class="logo">Smart Tasker</h1>
+
+    <div class="nav-links">
+      <a routerLink="/main" routerLinkActive="active">Main Page</a>
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    @if (isLoggedIn()) {
+      <button (click)="logout()" class="btn-logout">Logout</button>
+    }
+    <app-avatar></app-avatar>
+  </div>
+</nav>
