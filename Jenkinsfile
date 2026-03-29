@@ -42,7 +42,9 @@ pipeline {
 
         stage('Docker Push') {
             when {
-                branch 'main'
+                expression {
+                    return env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main'
+                }
             }
             steps {
                 withCredentials([usernamePassword(
@@ -51,8 +53,10 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push ${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG}'
-                    sh 'docker push ${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}'
+                    sh 'docker tag ${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG} ${DOCKER_USER}/${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG}'
+                    sh 'docker tag ${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}  ${DOCKER_USER}/${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}'
+                    sh 'docker push ${DOCKER_USER}/${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG}'
+                    sh 'docker push ${DOCKER_USER}/${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}'
                 }
             }
         }
