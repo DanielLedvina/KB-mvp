@@ -9,6 +9,18 @@ pipeline {
 
     stages {
 
+        stage('Check commit') {
+            steps {
+                script {
+                    def msg = sh(script: 'git log -1 --pretty=%s', returnStdout: true).trim()
+                    if (msg.startsWith('ci: update image tags')) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error('Skipping CI commit')
+                    }
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scm
