@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: tasker-frontend
-          image: danielledvina/tasker-frontend:25
+          image: danielledvina/tasker-frontend:26
           ports:
             - containerPort: 80
           readinessProbe:
