@@ -19,7 +19,7 @@ pipeline {
             steps {
                 dir('tasker-frontend') {
                     sh 'npm ci'
-                    sh 'npm test -- --run'
+                    sh 'npm run test:ci'
                     sh 'npm run build'
                 }
             }
