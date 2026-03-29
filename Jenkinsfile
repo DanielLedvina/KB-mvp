@@ -55,8 +55,12 @@ pipeline {
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     sh 'docker tag ${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG} ${DOCKER_USER}/${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG}'
                     sh 'docker tag ${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}  ${DOCKER_USER}/${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}'
+                    sh 'docker tag ${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG} ${DOCKER_USER}/${DOCKER_IMAGE_FRONTEND}:latest'
+                    sh 'docker tag ${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}  ${DOCKER_USER}/${DOCKER_IMAGE_BACKEND}:latest'
                     sh 'docker push ${DOCKER_USER}/${DOCKER_IMAGE_FRONTEND}:${DOCKER_TAG}'
                     sh 'docker push ${DOCKER_USER}/${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}'
+                    sh 'docker push ${DOCKER_USER}/${DOCKER_IMAGE_FRONTEND}:latest'
+                    sh 'docker push ${DOCKER_USER}/${DOCKER_IMAGE_BACKEND}:latest'
                 }
             }
         }
