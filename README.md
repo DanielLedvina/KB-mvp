@@ -197,6 +197,19 @@ Use this to demonstrate the automated build and deployment flow.
 - Jenkins container
 - ngrok account
 
+### First-time setup (run once)
+
+```bash
+# Install ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# Wait for all pods to be Running
+kubectl get pods -n argocd -w
+
+# Register the app in ArgoCD
+kubectl apply -f k8s/argocd-app.yaml
+```
+
 ### Startup
 
 ```bash
@@ -206,13 +219,17 @@ docker start jenkins
 
 # 2. Start ngrok so GitHub webhook can reach Jenkins
 ngrok http 8080
-# GitHub webhook is already configured — any push triggers a build automatically
+# Update the GitHub webhook URL with the new ngrok URL
+# GitHub repo → Settings → Webhooks → edit → Payload URL: https://<ngrok-id>.ngrok.io/github-webhook/
 
 # 3. Expose ArgoCD UI
 kubectl port-forward svc/argocd-server -n argocd 8081:443
 # Open https://localhost:8081
 # Username: admin
-# Password: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+# Password (macOS):
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode && echo
+# Password (Windows):
+# kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
 
 # 4. Expose the app running in Kubernetes
 kubectl port-forward svc/tasker-frontend -n tasker 4200:80
