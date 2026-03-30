@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: tasker-frontend
-          image: danielledvina/tasker-frontend:9
+          image: danielledvina/tasker-frontend:11
           imagePullPolicy: Never
           ports:
             - containerPort: 80
