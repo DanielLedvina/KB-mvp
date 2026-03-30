@@ -4,7 +4,6 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         disableConcurrentBuilds()
-        buildName("#${BUILD_NUMBER} - ${GIT_BRANCH} - ${GIT_COMMIT[0..6]}")
     }
 
     environment {
