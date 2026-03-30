@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        buildName("#${BUILD_NUMBER} - ${GIT_BRANCH} - ${GIT_COMMIT[0..6]}")
+    }
+
     environment {
         DOCKER_IMAGE_FRONTEND = 'tasker-frontend'
         DOCKER_IMAGE_BACKEND  = 'tasker-backend'
