@@ -26,9 +26,9 @@ const swaggerDocument = {
   },
 };
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use("/api-docs/auth", swaggerUi.serve, swaggerUi.setup(swaggerAuth));
-app.use("/api-docs/tasks", swaggerUi.serve, swaggerUi.setup(swaggerTasks));
+app.use("/api-docs/auth", swaggerUi.serveFiles(swaggerAuth), swaggerUi.setup(swaggerAuth));
+app.use("/api-docs/tasks", swaggerUi.serveFiles(swaggerTasks), swaggerUi.setup(swaggerTasks));
+app.use("/api-docs", swaggerUi.serveFiles(swaggerDocument), swaggerUi.setup(swaggerDocument));
 
 app.get("/", (req, res) => res.send("Welcome to Tasker API!"));
 app.use("/", authRoutes);
