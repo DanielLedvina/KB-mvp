@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: tasker-backend
-          image: danielledvina/tasker-backend:9
+          image: danielledvina/tasker-backend:11
           imagePullPolicy: Never
           ports:
             - containerPort: 3000
